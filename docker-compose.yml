@@ -21,13 +21,26 @@ services:
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
     ports:
       - '9092:9092'
-      - '9093:9093'
     networks:
       - app-tier
-  api:
-    container_name: flask-api
-    build: ./API
+  producer:
+    container_name: producer
+    build: ./Producer
+    networks:
+      - app-tier
     ports:
-      - '5000:5000'
+      - "8000:8000"
+    depends_on:
+      - kafka
+      - zookeeper
+  consumer:
+    container_name: consumer
+    build: ./Consumer
     networks:
       - app-tier
+    ports:
+      - "5000:5000"
+    depends_on:
+      - kafka
+      - zookeeper
+      - producer
