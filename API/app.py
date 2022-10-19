@@ -1,35 +1,39 @@
-from flask import Flask
-from threading import Event
-import signal
+from flask import Flask, request, jsonify
+import json
+from flask_cors import CORS
+from kafka import KafkaConsumer, KafkaProducer
 
-from flask_kafka import FlaskKafka
+#kafka-topics.sh --create --bootstrap-server zookeeper:2181 --replication-factor 1 --partitions 1 --topic <topic_name>
+#FUNCIÓN PARA CREAR LOS TOPICS, VER DIBUJO. INTEGRAR CON DOCKER COMPOSE
+
+#kafka-console-producer.sh --broker-list host1:9092,host2:9092 --topic "topic_name"
+#FUNCION PARA HACER EL PRODUCER(?
+
+#kafka-console-consumer.sh --bootstrap-server <host_ip_of_producer>:9092 --topic "topic_name" --from-beginning
+#FUNCION PARA HACER EL CONSUMER(?
+
 app = Flask(__name__)
+TOPIC_NAME = "INFERENCE"
+KAFKA_SERVER = "localhost:9092"
 
-INTERRUPT_EVENT = Event()
+producer = KafkaProducer(
+    bootstrap_servers = KAFKA_SERVER,
+    api_version = (0, 11, 15)
+)
 
-bus = FlaskKafka(INTERRUPT_EVENT,
-                 bootstrap_servers=",".join(["localhost:9092"]),
-                 group_id="consumer-grp-id"
-                 )
+@app.route('/kafka/pushToConsumers', methods=['POST'])
+def kafkaProducer():
+		
+    req = request.get_json()
+    json_payload = json.dumps(req)
+    json_payload = str.encode(json_payload)
+		# push data into INFERENCE TOPIC
+    producer.send(TOPIC_NAME, json_payload)
+    producer.flush()
+    print("Sent to consumer")
+    return jsonify({
+        "message": "You will receive an email in a short while with the plot", 
+        "status": "Pass"})
 
-
-def listen_kill_server():
-    signal.signal(signal.SIGTERM, bus.interrupted_process)
-    signal.signal(signal.SIGINT, bus.interrupted_process)
-    signal.signal(signal.SIGQUIT, bus.interrupted_process)
-    signal.signal(signal.SIGHUP, bus.interrupted_process)
-
-
-@bus.handle('test-topic')
-def test_topic_handler(msg):
-    print("consumed {} from test-topic".format(msg))
-
-@app.route('/')
-def hello_world():
-    return "Hello, World"
-
-
-if __name__ == '__main__':
-    #bus.run()
-    #listen_kill_server()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(debug=True, port = 5000)
