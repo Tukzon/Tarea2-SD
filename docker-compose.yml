@@ -46,3 +46,14 @@ services:
       - kafka
       - zookeeper
       - producer
+  postgres:
+    image: 'bitnami/postgresql:latest'
+    container_name: postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=tarea2
+    ports:
+      - "5432:5432"
+    networks:
+      - app-tier
