@@ -7,12 +7,14 @@ networks:
 services:
   zookeeper:
     image: 'bitnami/zookeeper:latest'
+    container_name: zookeeper
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     networks:
       - app-tier
   kafka:
     image: 'bitnami/kafka:latest'
+    container_name: kafka
     environment:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
