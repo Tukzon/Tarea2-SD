@@ -49,7 +49,7 @@ services:
       - zookeeper
       - producer
   postgres:
-    image: 'debezium/postgresql:latest'
+    image: 'bitnami/postgresql:latest'
     container_name: postgres
     environment:
       - POSTGRES_PASSWORD=postgres
