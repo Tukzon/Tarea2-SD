@@ -1,6 +1,6 @@
 import json
 from flask import Flask, redirect, jsonify
-from aiokafka import AIOKafkaConsumer
+from kafka import KafkaConsumer
 import asyncio
 
 app = Flask(__name__)
@@ -33,7 +33,7 @@ def view_blocked():
     return users_blocked    
 
 async def consume():
-    consumer = AIOKafkaConsumer(
+    consumer = KafkaConsumer(
         'test',
         bootstrap_servers='kafka:9092')
     await consumer.start()

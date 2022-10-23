@@ -2,16 +2,19 @@ from crypt import methods
 import json
 from time import time
 from flask import Flask, request, jsonify
-from aiokafka import AIOKafkaProducer
+from kafka import KafkaProducer
 import asyncio
 
 app = Flask(__name__)
 topic_list = []
 
+def serializer(message):
+    return json.dumps(message).encode('utf-8')
 
 async def send_one(message):
-    producer = AIOKafkaProducer(
-        bootstrap_servers='kafka:9092')
+    producer = KafkaProducer(
+        bootstrap_servers='kafka:9092',
+        value_serializer=serializer)
     await producer.start()
     try:
         await producer.send_and_wait("test", message)
@@ -22,15 +25,6 @@ async def send_one(message):
 def index():
         return jsonify({'message': 'Hello World!'})
 
-@app.route('/login', methods=['POST'])
-def login():
-    if request.method == 'POST':
-        user = request.form['user']
-        message={'user': user, 'time_login': time()}
-        message = json.dumps(message).encode('utf-8')
-        asyncio.run(send_one(message))
-    return jsonify({'message': 'Hello World!'})
-
 @app.route('/newMember', methods=['POST'])
 def NewMember():
     if request.method == 'POST':
@@ -38,7 +32,7 @@ def NewMember():
         message={'user': user, 'time_register': time()}
         message = json.dumps(message).encode('utf-8')
         asyncio.run(send_one(message))
-    return jsonify({'message': 'Hello World!'})
+    return jsonify({'message': message})
 
 @app.route('/deleteMember', methods=['DELETE'])
 def DeleteMember():
