@@ -1,7 +1,7 @@
 from crypt import methods
 import json
 from time import time
-from flask import Flask, render_template, request
+from flask import Flask, request, jsonify
 from aiokafka import AIOKafkaProducer
 import asyncio
 
@@ -20,7 +20,7 @@ async def send_one(message):
 
 @app.route('/')
 def index():
-        return render_template('index.html')
+        return jsonify({'message': 'Hello World!'})
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -29,7 +29,7 @@ def login():
         message={'user': user, 'time_login': time()}
         message = json.dumps(message).encode('utf-8')
         asyncio.run(send_one(message))
-    return render_template('index.html')
+    return jsonify({'message': 'Hello World!'})
 
 @app.route('/newMember', methods=['POST'])
 def NewMember():
@@ -38,7 +38,7 @@ def NewMember():
         message={'user': user, 'time_register': time()}
         message = json.dumps(message).encode('utf-8')
         asyncio.run(send_one(message))
-    return render_template('index.html')
+    return jsonify({'message': 'Hello World!'})
 
 @app.route('/deleteMember', methods=['DELETE'])
 def DeleteMember():
@@ -47,23 +47,23 @@ def DeleteMember():
         message={'user': user, 'time_delete': time()}
         message = json.dumps(message).encode('utf-8')
         asyncio.run(send_one(message))
-    return render_template('index.html')
+    return jsonify({'message': 'Hello World!'})
 
 @app.route('/carritoProfugo', methods=['POST'])
 def carritoProfugo():
-    print("uwu")
+    return jsonify({'message': 'Hello World!'})
 
 @app.route('/carritoPosicion', methods=['PATCH'])
 def carritoPosicion():
-    print("owo")
+    return jsonify({'message': 'Hello World!'})
 
 @app.route('/newVenta', methods=['POST'])
 def newVenta():
-    print("iwi")
+    return jsonify({'message': 'Hello World!'})
 
 @app.route('/deleteVenta', methods=['DELETE'])
 def deleteVenta():
-    print("awa")   
+    return jsonify({'message': 'Hello World!'})  
 
 if __name__== "__main__":
-    app.run(debug = True,port = 8000)
+    app.run(host='0.0.0.0' ,debug = True,port = 8000)

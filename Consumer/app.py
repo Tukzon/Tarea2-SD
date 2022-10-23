@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, redirect
+from flask import Flask, redirect, jsonify
 from aiokafka import AIOKafkaConsumer
 import asyncio
 
@@ -46,13 +46,13 @@ async def consume():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return jsonify({'message': 'Hello World!'})
 
 @app.route('/blocked')
 def blocked():
     asyncio.run(consume())
     users_blocked = view_blocked()
-    return render_template('blocked.html', values= users_blocked)
+    return jsonify({'message': 'Hello World!'})
     
 if __name__== "__main__":
-    app.run(debug = True,port = 5000)
+    app.run(host='0.0.0.0',debug = True,port = 5000)

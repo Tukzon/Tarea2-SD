@@ -12,4 +12,4 @@ EXPOSE 8000
 
 COPY . .
 
-CMD ["flask", "run"]
+CMD ["python", "app.py"]
