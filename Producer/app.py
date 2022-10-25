@@ -27,37 +27,24 @@ def index():
 
 @app.route('/newMember', methods=['POST'])
 def NewMember():
-    if request.method == 'POST':
-        user = request.form['user']
-        message={'user': user, 'time_register': time()}
-        message = json.dumps(message).encode('utf-8')
-        asyncio.run(send_one(message))
-    return jsonify({'message': message})
-
-@app.route('/deleteMember', methods=['DELETE'])
-def DeleteMember():
-    if request.method == 'DELETE':
-        user = request.form['user']
-        message={'user': user, 'time_delete': time()}
-        message = json.dumps(message).encode('utf-8')
-        asyncio.run(send_one(message))
-    return jsonify({'message': 'Hello World!'})
-
-@app.route('/carritoProfugo', methods=['POST'])
-def carritoProfugo():
-    return jsonify({'message': 'Hello World!'})
-
-@app.route('/carritoPosicion', methods=['PATCH'])
-def carritoPosicion():
-    return jsonify({'message': 'Hello World!'})
+    data = request.get_json()
+    if not data:
+        return jsonify({'message': 'No input data provided'}), 400
+    return jsonify(data), 201
 
 @app.route('/newVenta', methods=['POST'])
 def newVenta():
-    return jsonify({'message': 'Hello World!'})
+    data = request.get_json()
+    if not data:
+        return jsonify({'message': 'No input data provided'}), 400
+    return jsonify(data), 201
 
-@app.route('/deleteVenta', methods=['DELETE'])
-def deleteVenta():
-    return jsonify({'message': 'Hello World!'})  
+@app.route('/carritoProfugo', methods=['POST'])
+def carritoProfugo():
+    data = request.get_json()
+    if not data:
+        return jsonify({'message': 'No input data provided'}), 400
+    return jsonify(data), 201
 
 if __name__== "__main__":
     app.run(host='0.0.0.0' ,debug = True,port = 8000)
