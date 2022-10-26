@@ -1,14 +1,13 @@
 import asyncio
 import json
 import os
+import time
 from aiokafka import AIOKafkaConsumer
-#from .db.conn import query
 
 async def consume():
     consumer = AIOKafkaConsumer(
         'stock',
-        bootstrap_servers= 'kafka:9092',
-        group_id="stock-group")
+        bootstrap_servers= 'kafka:9092')
     await consumer.start()
     try:
         async for msg in consumer:

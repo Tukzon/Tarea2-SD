@@ -11,5 +11,7 @@ conn = psycopg2.connect(
 def query(query):
     cur = conn.cursor()
     cur.execute(query)
+    if query.startswith("SELECT"):
+        return cur.fetchall()
     conn.commit()
     cur.close()

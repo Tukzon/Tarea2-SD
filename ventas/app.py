@@ -8,8 +8,7 @@ from db.conn import query
 async def consume():
     consumer = AIOKafkaConsumer(
         'ventas',
-        bootstrap_servers='kafka:9092',
-        group_id="ventas-group")
+        bootstrap_servers='kafka:9092')
     await consumer.start()
     try:
         async for msg in consumer:
@@ -19,9 +18,9 @@ async def consume():
         await consumer.stop()
 
 def ventas():
-    ventas = query("SELECT patente, count(*) FROM ventas WHERE hora > now() - interval '1 day' GROUP BY patente")
-    prom_ventas =  query("SELECT avg(count) FROM (SELECT count(*) FROM ventas WHERE hora > now() - interval '1 day' GROUP BY patente) as foo")
-    clientes_totales = query("SELECT count(*) FROM (SELECT DISTINCT cliente FROM ventas WHERE hora > now() - interval '1 day' GROUP BY patente) as foo")
+    ventas = query("SELECT patente, count(*) FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente")
+    prom_ventas =  query("SELECT avg(count) FROM (SELECT count(*) FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente) as foo")
+    clientes_totales = query("SELECT count(*) FROM (SELECT DISTINCT cliente FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente) as foo")
 
     dic = {}
     for i in range(len(ventas)-1):
@@ -33,7 +32,7 @@ def ventas():
     
     
 
-schedule.every(1).days.do(ventas)
+schedule.every(1).minutes.do(ventas)
 
 if __name__ == '__main__':
     while True:

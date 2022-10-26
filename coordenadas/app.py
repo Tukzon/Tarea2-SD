@@ -7,8 +7,7 @@ import time
 async def consume():
     consumer = AIOKafkaConsumer(
         'coordenadas',
-        bootstrap_servers='kafka:9092',
-        group_id="coordenadas-group")
+        bootstrap_servers='kafka:9092')
     await consumer.start()
     try:
         async for msg in consumer:
