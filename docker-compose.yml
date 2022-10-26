@@ -27,6 +27,7 @@ services:
       - '9092:9092'
     networks:
       - app-tier
+    restart: always
     depends_on:
       - zookeeper
     command: sh -c "((sleep 10 && kafka-topics.sh --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 2 --topic ventas && kafka-topics.sh --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 2 --topic stock && kafka-topics.sh --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 2 --topic coordenadas)&)&& /opt/bitnami/scripts/kafka/entrypoint.sh /run.sh"
@@ -53,16 +54,16 @@ services:
       - zookeeper
       - producer
   postgres:
-    image: 'bitnami/postgresql:latest'
+    image: postgres:latest
     container_name: postgres
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=tarea2
+      - TZ=America/Santiago
     ports:
       - "5432:5432"
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    restart: always
     networks:
       - app-tier
