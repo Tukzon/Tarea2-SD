@@ -1,6 +1,21 @@
 import schedule
 import time
-from .db.conn import query
+import asyncio
+from kafka import KafkaConsumer
+from db.conn import query
+
+async def consume():
+    consumer = KafkaConsumer(
+        'ventas',
+        bootstrap_servers='kafka:9092',
+        auto_offset_reset='earliest')
+    await consumer.start()
+    try:
+        async for msg in consumer:
+            print(msg)
+            return json.loads(msg.value)
+    finally:
+        await consumer.stop()
 
 def ventas():
     ventas = query("SELECT patente, count(*) FROM ventas WHERE hora > now() - interval '1 day' GROUP BY patente")
