@@ -1,6 +1,7 @@
 import schedule
 import time
 import asyncio
+import json
 from aiokafka import AIOKafkaConsumer
 from db.conn import query
 
