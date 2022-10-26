@@ -1,15 +1,14 @@
 import schedule
 import time
 import asyncio
-from kafka import KafkaConsumer
+from aiokafka import AIOKafkaConsumer
 from db.conn import query
 
 async def consume():
-    consumer = KafkaConsumer(
+    consumer = AIOKafkaConsumer(
         'ventas',
         bootstrap_servers='kafka:9092',
-        auto_offset_reset='earliest',
-        api_version=(0, 10, 1))
+        group_id="ventas-group")
     await consumer.start()
     try:
         async for msg in consumer:

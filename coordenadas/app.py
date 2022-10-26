@@ -1,15 +1,14 @@
 import asyncio
 import json
 import os
-from kafka import KafkaConsumer
+from aiokafka import AIOKafkaConsumer
 import time
 
 async def consume():
-    consumer = KafkaConsumer(
+    consumer = AIOKafkaConsumer(
         'coordenadas',
         bootstrap_servers='kafka:9092',
-        auto_offset_reset='earliest',
-        api_version=(0, 10, 1))
+        group_id="coordenadas-group")
     await consumer.start()
     try:
         async for msg in consumer:

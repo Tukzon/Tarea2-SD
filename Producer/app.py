@@ -2,8 +2,7 @@ from crypt import methods
 import json
 from time import time
 from flask import Flask, request, jsonify
-from kafka import KafkaProducer
-from kafka.errors import KafkaError
+from aiokafka import AIOKafkaProducer
 import psycopg2
 import asyncio
 
@@ -23,14 +22,12 @@ def serializer(message):
     return json.dumps(message).encode('utf-8')
 
 async def send_one(message):
-    producer = KafkaProducer(
-        bootstrap_servers='kafka:9092',
-        value_serializer=serializer,
-        api_version=(0, 10, 1)
-    )
+    producer = AIOKafkaProducer(
+        bootstrap_servers='kafka:9092'
+        )
     await producer.start()
     try:
-        await producer.send_and_wait("test", message)
+        await producer.send_and_wait("stock", message)
     finally:
         await producer.stop()
 
@@ -68,3 +65,4 @@ def carritoProfugo():
 
 if __name__== "__main__":
     app.run(host='0.0.0.0' ,debug = True,port = 8000)
+    asyncio.run(send_one("Hola"))
