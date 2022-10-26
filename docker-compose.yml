@@ -59,5 +59,9 @@ services:
       - POSTGRES_DB=tarea2
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/bitnami/postgresql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
     networks:
       - app-tier
