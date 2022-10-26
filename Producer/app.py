@@ -25,7 +25,9 @@ def serializer(message):
 async def send_one(message):
     producer = KafkaProducer(
         bootstrap_servers='kafka:9092',
-        value_serializer=serializer)
+        value_serializer=serializer,
+        api_version=(0, 10, 1)
+    )
     await producer.start()
     try:
         await producer.send_and_wait("test", message)
