@@ -20,7 +20,8 @@ async def consume():
 def ventas():
     ventas = query("SELECT patente, count(*) FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente")
     prom_ventas =  query("SELECT avg(count) FROM (SELECT count(*) FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente) as foo")
-    clientes_totales = query("SELECT count(*) FROM (SELECT DISTINCT cliente FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente) as foo")
+    clientes_totales = query("SELECT patente, count(distinct cliente) FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente")
+    #clientes_totales = query("SELECT count(*) FROM (SELECT DISTINCT cliente FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente) as foo")
 
     dic = {}
     for i in range(len(ventas)-1):
