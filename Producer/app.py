@@ -59,8 +59,9 @@ def carritoProfugo():
     data = request.get_json()
     if not data:
         return jsonify({'message': 'No input data provided'}), 400
-    cursor.execute("INSERT INTO carritos (coordenadas) VALUES (%s)", (data['coordenadas'],))
-    return jsonify(data), 201
+    asyncio.run(send_one(data['coordenadas'], 'coordenadas'))
+    #cursor.execute("INSERT INTO carritos (coordenadas) VALUES (%s)", (data['coordenadas'],))
+    return jsonify(data, "OK"), 201
 
 if __name__== "__main__":
     app.run(host='0.0.0.0' ,debug = True,port = 8000)
