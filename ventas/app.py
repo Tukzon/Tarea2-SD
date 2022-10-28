@@ -1,9 +1,27 @@
 import schedule
 import time
-import asyncio
+import threading
+import os
 import json
-from aiokafka import AIOKafkaConsumer
+from kafka import KafkaConsumer
 from db.conn import query
+
+
+def add_dict_to_txt(dict):
+    if not os.path.exists('./output/data.txt'):
+        f = open('./output/data.txt', 'w')
+        f.write(time.strftime("%d/%m/%Y") + '\n')
+        f.write(str(dict))
+        f.write('\n')
+        f.write('-'*50)
+        f.close()
+    else:
+        f = open('./output/data.txt', 'a')
+        f.write(time.strftime("%d/%m/%Y") + '\n')
+        f.write(str(dict))
+        f.write('\n')
+        f.write('-'*50)
+        f.close()
 
 async def consume():
     consumer = AIOKafkaConsumer(
@@ -19,21 +37,19 @@ async def consume():
 
 def ventas():
     ventas = query("SELECT patente, count(*) FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente")
-    prom_ventas =  query("SELECT avg(count) FROM (SELECT count(*) FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente) as foo")
-    clientes_totales = query("SELECT patente, count(distinct cliente) FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente")
-    #clientes_totales = query("SELECT count(*) FROM (SELECT DISTINCT cliente FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente) as foo")
+    prom_ventas =  query("SELECT ventas.patente, sum(ventas.cantidad) AS suma, count(distinct ventas.cliente) AS cantidad FROM ventas WHERE data_time > now() - interval '1 day' GROUP BY patente")
 
     dic = {}
     for i in range(len(ventas)-1):
-        dic[ventas[i][0]]["ventas"] = ventas[i][1]
-        dic[ventas[i][0]]["promedio_ventas"] = prom_ventas[i][0]
-        dic[ventas[i][0]]["clientes_totales"] = clientes_totales[i][0]
+        dic[ventas[i][0]] = {'ventas': ventas[i][1], 'promedio_ventas': (prom_ventas[i][1]/prom_ventas[i][2]), 'clientes_totales': prom_ventas[i][2]}
 
-    print(dic)
+    add_dict_to_txt(dic)
+
+    return dic
     
     
 
-schedule.every(1).minutes.do(ventas)
+schedule.every(1).days.do(ventas)
 
 if __name__ == '__main__':
     while True:
