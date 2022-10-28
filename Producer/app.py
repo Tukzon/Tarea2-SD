@@ -1,10 +1,8 @@
-from crypt import methods
 import json
-from time import time
+import time, threading, logging
 from flask import Flask, request, jsonify
-from aiokafka import AIOKafkaProducer
+from kafka import KafkaProducer
 import psycopg2
-import asyncio
 
 # CONFIGURE POSTGRES CONNECTION
 conn = psycopg2.connect(
@@ -14,11 +12,29 @@ conn = psycopg2.connect(
     password="postgres")
 
 cursor = conn.cursor()
+producer_stop = threading.Event()
 
 app = Flask(__name__)
-topic_list = []
 
-def serializer(data):
+# array to bytes function
+def array_to_bytes(arr):
+    return bytes(json.dumps(arr), encoding='utf-8')
+
+class Producer(threading.Thread):
+    msg = None
+
+    def run(self, topic, data, partit=0):
+        producer = KafkaProducer(bootstrap_servers='kafka:9092')
+        self.sent = 0
+        self.msg = array_to_bytes(data)
+
+        while not producer_stop.is_set():
+            producer.send(topic, self.msg, partition=partit)
+            self.sent += 1
+            producer_stop.set()
+        producer.flush()
+
+'''def serializer(data):
     return json.dumps(data).encode('utf-8')
 
 async def send_one(message, topic):
@@ -30,7 +46,7 @@ async def send_one(message, topic):
     try:
         await producer.send_and_wait(topic, message)
     finally:
-        await producer.stop()
+        await producer.stop()'''
 
 @app.route('/')
 def index():
@@ -42,7 +58,7 @@ def NewMember():
     if not data:
         return jsonify({'message': 'No input data provided'}), 400
     app.logger.info(data)
-    asyncio.run(send_one(data, 'miembros'))
+    #asyncio.run(send_one(data, 'miembros'))
     return jsonify({'message': 'Waiting for consumer!'}), 200
 
 @app.route('/newVenta', methods=['POST'])
@@ -59,9 +75,17 @@ def carritoProfugo():
     data = request.get_json()
     if not data:
         return jsonify({'message': 'No input data provided'}), 400
-    asyncio.run(send_one(data['coordenadas'], 'coordenadas'))
+    app.logger.info("Sending to Consumer")
+    Producer().run('coordenadas', data['coordenadas'], 0)
+    app.logger.info('Message sent')
+    #asyncio.run(send_one(data['coordenadas'], 'coordenadas'))
     #cursor.execute("INSERT INTO carritos (coordenadas) VALUES (%s)", (data['coordenadas'],))
     return jsonify(data, "OK"), 201
 
+
 if __name__== "__main__":
-    app.run(host='0.0.0.0' ,debug = True,port = 8000)
+    logging.basicConfig(
+        format='%(asctime)s.%(msecs)s:%(name)s:%(thread)d:%(levelname)s:%(process)d:%(message)s',
+        level=logging.INFO
+        )
+    app.run(host='0.0.0.0' ,debug = True,port = 8000, threaded=True)

@@ -1,8 +1,41 @@
-import asyncio
 import json
 import os
-from aiokafka import AIOKafkaConsumer
-import time
+import threading, logging, time
+import signal
+from kafka import KafkaConsumer, KafkaProducer
+
+consumer_stop = threading.Event()
+
+#bytes to array function
+def bytes_to_array(bytes):
+    return json.loads(bytes.decode('utf-8'))
+
+class Consumer(threading.Thread):
+
+    def run(self):
+        consumer = KafkaConsumer(bootstrap_servers='kafka:9092',
+                                auto_offset_reset='earliest')
+        consumer.subscribe(['coordenadas'])
+        self.valid = 0
+        self.invalid = 0
+        self.msg = None
+
+        for message in consumer:
+            if message.value != None and message.value != self.msg:
+                self.valid += 1
+                self.msg = bytes_to_array(message.value)
+
+            else:
+                self.invalid += 1
+                consumer_stop.set()
+                break
+
+            if consumer_stop.is_set():
+                self.msg = None
+                break
+    
+            consumer.close()
+
 
 def add_value_to_file(value):
     if not os.path.exists('./output/data.txt'):
@@ -15,7 +48,7 @@ def add_value_to_file(value):
         f.close()
 
 
-async def consume():
+'''async def consume():
     consumer = AIOKafkaConsumer(
         'coordenadas',
         bootstrap_servers='kafka:9092')
@@ -34,11 +67,26 @@ async def coordenadas():
             add_value_to_file(str(data))
             print(data)
         except asyncio.TimeoutError:
-            print('timeout')
+            print('timeout')'''
+
+def main():
+    threads = Consumer()
+
+    threads.start()
+    
+    time.sleep(10)
+    print('Message received: %s' % threads.msg)
+    print('Invalid messages: %d' % threads.invalid)
+    print('Valid messages: %d' % threads.valid)
+    consumer_stop.set()
+    threads.join()
 
 
+    
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.create_task(coordenadas())
-    loop.run_forever()
+    #logging.basicConfig(
+     #   format='%(asctime)s.%(msecs)s:%(name)s:%(thread)d:%(levelname)s:%(process)d:%(message)s',
+      #  level=logging.INFO
+       # )
+    main()
