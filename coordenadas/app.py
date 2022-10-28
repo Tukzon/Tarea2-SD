@@ -2,7 +2,7 @@ import json
 import os
 import threading, logging, time
 import signal
-from kafka import KafkaConsumer, KafkaProducer
+from kafka import KafkaConsumer
 
 consumer_stop = threading.Event()
 

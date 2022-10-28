@@ -39,6 +39,8 @@ services:
     ports:
       - "5000:5000"
     restart: always
+    volumes:
+      - ./output:/output
     depends_on:
       - kafka
       - producer
