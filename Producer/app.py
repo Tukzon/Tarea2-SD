@@ -66,9 +66,15 @@ def newVenta():
     data = request.get_json()
     if not data:
         return jsonify({'message': 'No input data provided'}), 400
-    cursor.execute("INSERT INTO ventas (patente,cliente,cantidad,ubicacion) VALUES (%s,%s,%s,%s)", (data['patente'],data['cliente'],data['cantidad'],data['ubicacion']))
-    conn.commit()
-    return jsonify({'message': 'Venta created successfully'}), 201
+    qty = cursor.execute("SELECT stock FROM miembros WHERE patente = %s", (data['patente']))
+    qtyfetch = cursor.fetchone()
+    if data['cantidad'] <= qtyfetch[0]:
+        cursor.execute("INSERT INTO ventas (patente,cliente,cantidad,ubicacion) VALUES (%s,%s,%s,%s)", (data['patente'],data['cliente'],data['cantidad'],data['ubicacion']))
+        cursor.execute("UPDATE miembros SET stock = stock - %s WHERE patente = %s", (data['cantidad'],data['patente']))
+        conn.commit()
+        return jsonify({'message': 'Venta created successfully'}), 201
+    else:
+        return jsonify({'message': 'Not enough stock'}), 400
 
 @app.route('/carritoProfugo', methods=['POST'])
 def carritoProfugo():
